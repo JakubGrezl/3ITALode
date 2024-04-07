@@ -1,6 +1,7 @@
-
+ï»¿
 using System.Numerics;
 using System.Linq;
+using Microsoft.VisualBasic.Logging;
 namespace _3ITALode
 {
     public partial class Form1 : Form
@@ -16,7 +17,6 @@ namespace _3ITALode
             set
             {
                 aktualniHrac = value;
-                //Vezme se hráè a vizuálnì se ukáže že hraje
             }
         }
 
@@ -54,19 +54,20 @@ namespace _3ITALode
 
         private void VytvorHru()
         {
-            //Vytvoøení hráèù
-            hrac1 = new Hrac("Apep");
-            hrac2 = new Hrac("Limiøob");
+            //VytvoÃ¸enÃ­ hrÃ¡Ã¨Ã¹
+            hrac1 = new Hrac("TondaFimlar", label1);
+            hrac1.ActivePlayer();
+            hrac2 = new Hrac("RandomHovna", label2);
 
-            //  AktualniHrac = Random.Shared.Next(0, 2) == 0 ? hrac1 : hrac2;
             AktualniHrac = hrac1;
-            //Vytvoøení políèek
             for (int i = 0; i < 10; i++)
             {
                 for (int j = 0; j < 10; j++)
                 {
                     Policko polickoHrace1 = new Policko(j, i, null, hrac1);
                     polickoHrace1.OnPolickoKliknuto += OnPolickoKliknuto;
+                    polickoHrace1.OnPolickoHover += OnPolickoHover;
+                    polickoHrace1.OnPolickoLeave += OnPolickoLeave;
                     hrac1.HerniPole[i, j] = polickoHrace1;
                     flowLayoutPanel1.Controls.Add(
                         polickoHrace1
@@ -74,7 +75,10 @@ namespace _3ITALode
 
 
                     Policko polickoHrace2 = new Policko(j, i, null, hrac2);
-                    polickoHrace2.OnPolickoKliknuto += OnPolickoKliknuto;
+                    polickoHrace2.OnPolickoHover += OnPolickoHover;
+                    polickoHrace2.OnPolickoLeave += OnPolickoLeave;
+
+
                     hrac2.HerniPole[i, j] = polickoHrace2;
                     flowLayoutPanel2.Controls.Add(
                         polickoHrace2
@@ -82,26 +86,88 @@ namespace _3ITALode
                 }
             }
         }
+
+        private void OnPolickoLeave(Policko policko)
+        {
+            if (nakliknutePolicko != null)
+            {
+                int smerX = policko.X - nakliknutePolicko.X;
+                int smerY = policko.Y - nakliknutePolicko.Y;
+
+
+                Point zacatekLode = new Point(nakliknutePolicko.X, nakliknutePolicko.Y);
+
+                var pole = AktualniHrac.HerniPole;
+
+                int aktualniLod = lodeNaStavbu[indexAktualniLode];
+
+
+                for (int i = 0; i < aktualniLod; i++)
+                {
+                    AktualniHrac.HerniPole[zacatekLode.Y, zacatekLode.X].RemoveGhost();
+                    zacatekLode.Offset(smerX, smerY);
+                }
+            }
+            
+
+        }
+
+        private void OnPolickoHover(Policko policko)
+        {
+
+            if (nakliknutePolicko != null)
+            {
+                int smerX = policko.X - nakliknutePolicko.X;
+                int smerY = policko.Y - nakliknutePolicko.Y;
+
+
+                Point zacatekLode = new Point(nakliknutePolicko.X, nakliknutePolicko.Y);
+                if (zacatekLode.X < 0 ||
+                    zacatekLode.X >= AktualniHrac.HerniPole.GetLength(1) ||
+                    zacatekLode.Y < 0 ||
+                    zacatekLode.Y >= AktualniHrac.HerniPole.GetLength(0))
+                {
+                    // AktualniHrac.HerniPole[zacatekLode.Y, zacatekLode.X].RemoveGhost();
+                    return;
+                } else
+                {
+                int aktualniLod = lodeNaStavbu[indexAktualniLode];
+
+
+                for (int i = 0; i < aktualniLod; i++)
+                {
+                    AktualniHrac.HerniPole[zacatekLode.Y, zacatekLode.X].Ghost();
+                    zacatekLode.Offset(smerX, smerY);
+                }
+
+                }
+
+
+            }
+                
+
+        }
+
         private void OnPolickoKliknuto(Policko policko)
         {
-            //Podmínky stavby / Podmínky støelby
+            //PodmÃ­nky stavby / PodmÃ­nky stÃ¸elby
             if (AktualniHrac != policko.Hrac || policko.Lod != null)
                 return;
 
-            //Kontrola, že na políèku neni loï 
+            //Kontrola, Å¾e na polÃ­Äku neni loÄ
 
             if (nakliknutePolicko == null)
             {
                 nakliknutePolicko = policko;
                 return;
             }
-            //Nesmím kliknout na stejné políèko => jinak odklikávám
+            //NesmÃ­m kliknout na stejnÃ© polÃ­Ã¨ko => jinak odklikÃ¡vÃ¡m
             if (nakliknutePolicko == policko)
             {
                 nakliknutePolicko = null;
                 return;
             }
-            //Vezmu obì políèka zjistím smìr
+            //Vezmu obÃ¬ polÃ­Ã¨ka zjistÃ­m smÃ¬r
             int smerX = policko.X - nakliknutePolicko.X;
             int smerY = policko.Y - nakliknutePolicko.Y;
             if (Math.Abs(smerX) + Math.Abs(smerY) > 1)
@@ -116,7 +182,7 @@ namespace _3ITALode
 
             for (int i = 0; i < aktualniLod; i++)
             {
-                //Zjistím jestli se loï vejde
+                //ZjistÃ­m jestli se loÃ¯ vejde
                 if (zacatekLode.X < 0 ||
                     zacatekLode.X >= AktualniHrac.HerniPole.GetLength(1) ||
                     zacatekLode.Y < 0 ||
@@ -126,10 +192,10 @@ namespace _3ITALode
                     return;
                 }
 
-                //Zjistím jestli se nenachází v cestì jiná loï
+                //ZjistÃ­m jestli se nenachÃ¡zÃ­ v cestÃ¬ jinÃ¡ loÃ¯
                 if (AktualniHrac.HerniPole[zacatekLode.Y, zacatekLode.X].Lod != null)
                 {
-                    MessageBox.Show("JE TAM LOÏ");
+                    MessageBox.Show("JE TAM LOÄŽ");
                     return;
                 }
                 zacatekLode.Offset(smerX, smerY);
@@ -137,7 +203,7 @@ namespace _3ITALode
             }
 
 
-            //Položím loï
+            //PoloÅ¾Ã­m loÃ¯
             zacatekLode = new Point(nakliknutePolicko.X, nakliknutePolicko.Y);
             Lod lod = new Lod(aktualniLod, new Vector2(smerX, smerY), zacatekLode.X, zacatekLode.Y, 0);
             for (int i = 0; i < aktualniLod; i++)
@@ -167,13 +233,13 @@ namespace _3ITALode
             }
 
 
-            //Podmínky jestli políèko mùže být nakliknutelný
+            //PodmÃ­nky jestli polÃ­Ã¨ko mÃ¹Å¾e bÃ½t nakliknutelnÃ½
 
 
 
 
-            //Støelba => Zmìna hráèù po konci kola
-            //Kontrola sestøelených lodí => Checkování konce hry
+            //StÃ¸elba => ZmÃ¬na hrÃ¡Ã¨Ã¹ po konci kola
+            //Kontrola sestÃ¸elenÃ½ch lodÃ­ => CheckovÃ¡nÃ­ konce hry
 
         }
 
@@ -184,7 +250,9 @@ namespace _3ITALode
 
         private void PrepniHrace()
         {
+            AktualniHrac.DeactivePlayer();
             AktualniHrac = AktualniHrac == hrac1 ? hrac2 : hrac1;
+            AktualniHrac.ActivePlayer();
         }
     }
 }

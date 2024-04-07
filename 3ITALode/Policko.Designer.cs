@@ -32,12 +32,15 @@
             // 
             // Policko
             // 
-            AutoScaleDimensions = new SizeF(8F, 20F);
+            AutoScaleDimensions = new SizeF(7F, 15F);
             AutoScaleMode = AutoScaleMode.Font;
             BackColor = Color.Turquoise;
+            Margin = new Padding(3, 2, 3, 2);
             Name = "Policko";
-            Size = new Size(40, 40);
+            Size = new Size(35, 30);
             MouseClick += Policko_MouseClick;
+            MouseLeave += Policko_MouseLeave;
+            MouseHover += Policko_MouseHover;
             ResumeLayout(false);
         }
 

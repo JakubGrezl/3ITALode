@@ -17,7 +17,9 @@ namespace _3ITALode
 
         //Loď na políčku
         private Lod? lod;
-        public Lod? Lod { get => lod; set
+        public Lod? Lod
+        {
+            get => lod; set
             {
                 lod = value;
 
@@ -30,6 +32,8 @@ namespace _3ITALode
         public Hrac Hrac { get; private set; }
 
         public event Action<Policko> OnPolickoKliknuto;
+        public event Action<Policko> OnPolickoHover;
+        public event Action<Policko> OnPolickoLeave;
 
         public Policko(int X, int Y, Lod lod, Hrac hrac) : this()
         {
@@ -47,12 +51,38 @@ namespace _3ITALode
 
         private void Policko_MouseClick(object sender, MouseEventArgs e)
         {
-            if(OnPolickoKliknuto != null)
+            if (OnPolickoKliknuto != null)
                 OnPolickoKliknuto.Invoke(this);
         }
+
+
+
+
         public void SchovejLod()
         {
             BackColor = Color.Turquoise;
+        }
+
+        public void Ghost()
+        {
+            BackColor = Color.Gray;
+        }
+
+        public void RemoveGhost()
+        {
+            SchovejLod();
+        }
+
+        private void Policko_MouseHover(object sender, EventArgs e)
+        {
+            if (OnPolickoHover != null)
+                OnPolickoHover.Invoke(this);
+        }
+
+        private void Policko_MouseLeave(object sender, EventArgs e)
+        {
+            if (OnPolickoLeave != null)
+                OnPolickoLeave.Invoke(this);
         }
     }
 }
